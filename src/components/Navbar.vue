@@ -39,10 +39,10 @@ const confirmEmail = async () => {
         <!-- Show login/register if user is NOT logged in -->
         <li><router-link to="/login">Login</router-link></li>
         <li><router-link to="/register">Register</router-link></li>
-        <li><router-link to="/post-create">New Post</router-link></li>
       </template>
 
       <template v-else>
+        <li><router-link to="/post-create">New Post</router-link></li>
         <!-- Show Logout if user IS logged in -->
         <li><button @click="logout">Logout</button></li>
 
