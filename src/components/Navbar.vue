@@ -1,31 +1,36 @@
 <script setup>
-import { useUserProfileStore } from "@/stores/userProfile";
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
+import { useUserProfileStore } from '@/stores/userProfile';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import axios from 'axios';
 
+const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
 const router = useRouter();
 
 const logout = () => {
   userProfileStore.$reset();
-  localStorage.removeItem("userProfile");
-  router.push("/login");
+  userProfileStore.logout();
+  authStore.logout();
+  router.push('/login');
 };
 
 const confirmEmail = async () => {
   try {
     const backendApi = import.meta.env.VITE_BACKEND_API;
+    const userProfile = localStorage.getItem('user_profile');
+    const userEmail = userProfile.email;
 
     // Make a POST request to the backend API
     await axios.post(`${backendApi}/api/send-confirmation-email`, {
-      email: userProfileStore.email,
+      email: userEmail,
     });
 
-    alert("A confirmation email has been sent!");
+    alert('A confirmation email has been sent!');
   } catch (error) {
     console.error(error);
-    alert("Something went wrong. Please try again later.");
+    alert('Something went wrong. Please try again later.');
   }
 };
 </script>
@@ -35,7 +40,7 @@ const confirmEmail = async () => {
     <ul>
       <li><router-link to="/">Home</router-link></li>
 
-      <template v-if="!userProfileStore.username">
+      <template v-if="!authStore.token">
         <!-- Show login/register if user is NOT logged in -->
         <li><router-link to="/login">Login</router-link></li>
         <li><router-link to="/register">Register</router-link></li>
@@ -77,16 +82,19 @@ li {
 }
 a,
 button {
+  padding: 0;
   color: white;
   text-decoration: none;
   background: none;
   border: none;
   cursor: pointer;
 }
-button:hover {
-  text-decoration: underline;
-}
 li:hover {
   background-color: #666565;
+}
+
+a:hover {
+  text-decoration: none;
+  color: white;
 }
 </style>

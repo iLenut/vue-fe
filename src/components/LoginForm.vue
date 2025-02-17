@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import { useUserProfileStore } from "@/stores/userProfile";
-import { useRouter } from "vue-router";
+import { ref } from 'vue';
+import axios from 'axios';
+import { useUserProfileStore } from '@/stores/userProfile';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
-const email = ref("");
-const password = ref("");
+const email = ref('');
+const password = ref('');
 const router = useRouter();
 
 const updateUserProfile = (user) => {
@@ -16,7 +17,7 @@ const updateUserProfile = (user) => {
     user.firstname,
     user.lastname,
     user.email,
-    user.confirmed
+    user.confirmed,
   );
 };
 
@@ -25,10 +26,14 @@ const handleLogin = async () => {
     const backendApi = import.meta.env.VITE_BACKEND_API;
 
     // Make a POST request to the backend API
-    await axios.post(`${backendApi}/api/login`, {
+    const response = await axios.post(`${backendApi}/api/login`, {
       email: email.value,
       password: password.value,
     });
+
+    const token = response.data.token;
+    const authStore = useAuthStore();
+    authStore.login(token);
 
     const user = await axios.post(`${backendApi}/api/user`, {
       email: email.value,
@@ -37,12 +42,12 @@ const handleLogin = async () => {
     if (user) {
       updateUserProfile(user.data.user);
     }
-    alert("Login successful!");
-    router.push("/");
+    alert('Login successful!');
+    router.push('/');
   } catch (error) {
     // Handle error response
     console.error(error);
-    alert("Login failed. Please try again.");
+    alert('Login failed. Please try again.');
   }
 };
 </script>

@@ -1,14 +1,16 @@
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import { useUserProfileStore } from "@/stores/userProfile";
+import { ref } from 'vue';
+import axios from 'axios';
+import { useUserProfileStore } from '@/stores/userProfile';
+import { useRouter } from 'vue-router';
 
-const username = ref("");
-const firstname = ref("");
-const lastname = ref("");
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
+const username = ref('');
+const firstname = ref('');
+const lastname = ref('');
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const router = useRouter();
 
 const updateUserProfile = () => {
   const userProfile = useUserProfileStore();
@@ -18,19 +20,18 @@ const updateUserProfile = () => {
     firstname.value,
     lastname.value,
     email.value,
-    false
+    false,
   );
 };
 
 const handleRegister = async () => {
   if (password.value !== confirmPassword.value) {
-    alert("Passwords do not match!");
+    alert('Passwords do not match!');
     return;
   }
 
   try {
     const backendApi = import.meta.env.VITE_BACKEND_API;
-
     // Make a POST request to the backend API
     await axios.post(`${backendApi}/api/register`, {
       username: username.value,
@@ -42,11 +43,12 @@ const handleRegister = async () => {
 
     updateUserProfile;
 
-    alert("Registration successful!");
+    alert('Registration successful! Please check your email for confirmation');
+    router.push('/');
   } catch (error) {
     // Handle error response
     console.error(error);
-    alert("Registration failed. Please try again.");
+    alert('Registration failed. Please try again.');
   }
 };
 </script>
