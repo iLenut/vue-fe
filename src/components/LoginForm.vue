@@ -4,14 +4,15 @@ import axios from 'axios';
 import { useUserProfileStore } from '@/stores/userProfile';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import Notification from './Notification.vue';
 
 const email = ref('');
 const password = ref('');
 const router = useRouter();
+const notifications = ref([]);
 
 const updateUserProfile = (user) => {
   const userProfile = useUserProfileStore();
-
   userProfile.updateProfile(
     user.username,
     user.firstname,
@@ -19,6 +20,13 @@ const updateUserProfile = (user) => {
     user.email,
     user.confirmed,
   );
+};
+
+const showNotification = (message, type) => {
+  notifications.value.push({ message, type });
+  setTimeout(() => {
+    notifications.value.shift(); // Remove notification after 3 seconds
+  }, 3000);
 };
 
 const handleLogin = async () => {
@@ -42,12 +50,16 @@ const handleLogin = async () => {
     if (user) {
       updateUserProfile(user.data.user);
     }
-    alert('Login successful!');
-    router.push('/');
+    showNotification(
+      'Login successful! Redirecting to home page...',
+      'success',
+    );
+    setTimeout(() => {
+      router.push('/');
+    }, 3000);
   } catch (error) {
-    // Handle error response
     console.error(error);
-    alert('Login failed. Please try again.');
+    showNotification('Login failed. Please try again.', 'error');
   }
 };
 </script>
@@ -65,6 +77,16 @@ const handleLogin = async () => {
       </div>
       <button type="submit">Login</button>
     </form>
+  </div>
+
+  <!-- Notifications list -->
+  <div>
+    <Notification
+      v-for="(notification, index) in notifications"
+      :key="index"
+      :message="notification.message"
+      :type="notification.type"
+    />
   </div>
 </template>
 

@@ -5,17 +5,27 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { ref } from 'vue';
 import ConfirmEmailPopup from './ConfirmEmailPopup.vue';
+import Notification from './Notification.vue'; // Import the Notification component
 
 const authStore = useAuthStore();
 const userProfileStore = useUserProfileStore();
 const router = useRouter();
 const confirmPopupRef = ref(null); // Create a ref for the popup component
+const notifications = ref([]); // Array to hold notifications
 
 const logout = () => {
   userProfileStore.$reset();
   userProfileStore.logout();
   authStore.logout();
   router.push('/login');
+};
+
+const showNotification = (message, type) => {
+  // Add notification to the array (type: success, error)
+  notifications.value.push({ message, type });
+  setTimeout(() => {
+    notifications.value.shift(); // Remove the notification after 3 seconds
+  }, 3000);
 };
 
 const confirmEmail = async () => {
@@ -25,7 +35,7 @@ const confirmEmail = async () => {
     const userEmail = userProfile ? JSON.parse(userProfile).email : '';
 
     if (!userEmail) {
-      alert('User email not found.');
+      showNotification('User email not found.', 'error');
       return;
     }
 
@@ -34,13 +44,13 @@ const confirmEmail = async () => {
       email: userEmail,
     });
 
-    alert('A secret token has been sent on email!');
+    showNotification('A secret token has been sent to your email!', 'success');
     if (confirmPopupRef.value) {
       confirmPopupRef.value.showPopup(); // Trigger the popup to show
     }
   } catch (error) {
     console.error(error);
-    alert('Something went wrong. Please try again later.');
+    showNotification('Something went wrong. Please try again later.', 'error');
   }
 };
 
@@ -54,16 +64,15 @@ const handleConfirmEmail = async (token) => {
       token,
     });
 
-    // Check the response for success
     if (response.data.success) {
-      alert(response.data.message); // Display success message
+      showNotification('Email confirmed successfully!', 'success');
       userProfileStore.confirmed = true; // Mark the email as confirmed in the store
     } else {
-      alert(response.data.message); // Display error message
+      showNotification('Invalid token. Please try again.', 'error');
     }
   } catch (error) {
     console.error(error);
-    alert('An error occurred while confirming your email.');
+    showNotification('An error occurred while confirming your email.', 'error');
   }
 };
 </script>
@@ -96,6 +105,16 @@ const handleConfirmEmail = async (token) => {
         />
       </template>
     </ul>
+
+    <!-- Notifications list -->
+    <div>
+      <Notification
+        v-for="(notification, index) in notifications"
+        :key="index"
+        :message="notification.message"
+        :type="notification.type"
+      />
+    </div>
   </nav>
 </template>
 

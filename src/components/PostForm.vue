@@ -1,6 +1,6 @@
 <template>
   <div class="post-form">
-    <h1>{{ isEditMode ? "Edit Post" : "Create New Post" }}</h1>
+    <h1>{{ isEditMode ? 'Edit Post' : 'Create New Post' }}</h1>
 
     <form @submit.prevent="handleSubmit">
       <!-- Title -->
@@ -59,16 +59,26 @@
 
       <!-- Submit Button -->
       <button type="submit" class="submit-btn">
-        {{ isEditMode ? "Update Post" : "Create Post" }}
+        {{ isEditMode ? 'Update Post' : 'Create Post' }}
       </button>
     </form>
+  </div>
+  <!-- Notifications list -->
+  <div>
+    <Notification
+      v-for="(notification, index) in notifications"
+      :key="index"
+      :message="notification.message"
+      :type="notification.type"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import axios from "axios";
-import { useRouter } from "vue-router";
+import { ref, watch } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+import Notification from './Notification.vue';
 
 // Props
 const isEditMode = ref(false); // Flag to check if we're editing or creating a post
@@ -76,22 +86,29 @@ const postId = ref(null); // ID of the post we're editing (if applicable)
 
 // Post Data
 const post = ref({
-  title: "",
-  content: "",
-  status: "draft",
+  title: '',
+  content: '',
+  status: 'draft',
   tags: [],
-  imageUrl: "",
+  imageUrl: '',
 });
 
 // Tags Input (comma separated)
-const tagsInput = ref("");
+const tagsInput = ref('');
 const imagePreview = ref(null); // For image preview
-
+const notifications = ref([]);
 const router = useRouter();
+
+const showNotification = (message, type) => {
+  notifications.value.push({ message, type });
+  setTimeout(() => {
+    notifications.value.shift(); // Remove notification after 3 seconds
+  }, 3000);
+};
 
 // Watch for changes to tagsInput and update the tags array
 watch(tagsInput, (newVal) => {
-  post.value.tags = newVal.split(",").map((tag) => tag.trim());
+  post.value.tags = newVal.split(',').map((tag) => tag.trim());
 });
 
 // Handle Image Upload
@@ -123,21 +140,20 @@ const handleSubmit = async () => {
     if (isEditMode.value) {
       response = await axios.put(
         `${backendApi}/api/post/${postId.value}`,
-        formData
+        formData,
       ); // Update
     } else {
       response = await axios.post(`${backendApi}/api/post`, formData); // Create
     }
 
-    alert(
-      isEditMode.value
-        ? "Post updated successfully!"
-        : "Post created successfully!"
-    );
-    router.push("/"); // Redirect after submit
+    isEditMode.value
+      ? showNotification('Post updated successfully!', 'success')
+      : showNotification('Post created successfully!', 'success');
+
+    router.push('/'); // Redirect after submit
   } catch (error) {
-    console.error("Error submitting post:", error);
-    alert("An error occurred while submitting the post.");
+    console.error('Error submitting post:', error);
+    showNotification('An error occurred while submitting the post.', 'error');
   }
 };
 
@@ -149,7 +165,7 @@ if (isEditMode.value && postId.value) {
     .then((response) => {
       post.value = response.data;
     })
-    .catch((error) => console.error("Error fetching post:", error));
+    .catch((error) => console.error('Error fetching post:', error));
 }
 </script>
 
@@ -226,7 +242,9 @@ textarea {
   border-radius: 3rem;
   font-size: 18px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .submit-btn:hover {

@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import { useUserProfileStore } from '@/stores/userProfile';
 import { useRouter } from 'vue-router';
+import Notification from './Notification.vue';
 
 const username = ref('');
 const firstname = ref('');
@@ -11,22 +11,18 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const router = useRouter();
+const notifications = ref([]);
 
-const updateUserProfile = () => {
-  const userProfile = useUserProfileStore();
-
-  userProfile.updateProfile(
-    username.value,
-    firstname.value,
-    lastname.value,
-    email.value,
-    false,
-  );
+const showNotification = (message, type) => {
+  notifications.value.push({ message, type });
+  setTimeout(() => {
+    notifications.value.shift(); // Remove notification after 3 seconds
+  }, 3000);
 };
 
 const handleRegister = async () => {
   if (password.value !== confirmPassword.value) {
-    alert('Passwords do not match!');
+    showNotification('Passwords do not match!', 'error');
     return;
   }
 
@@ -41,14 +37,17 @@ const handleRegister = async () => {
       password: password.value,
     });
 
-    updateUserProfile;
-
-    alert('Registration successful! Please check your email for confirmation');
-    router.push('/');
+    showNotification(
+      'Registration successful! Please login and confirm email!',
+      'success',
+    );
+    setTimeout(() => {
+      router.push('/login');
+    }, 3000);
   } catch (error) {
     // Handle error response
     console.error(error);
-    alert('Registration failed. Please try again.');
+    showNotification('Registration failed. Please try again.', 'error');
   }
 };
 </script>
@@ -87,6 +86,15 @@ const handleRegister = async () => {
       </div>
       <button type="submit">Register</button>
     </form>
+  </div>
+  <!-- Notifications list -->
+  <div>
+    <Notification
+      v-for="(notification, index) in notifications"
+      :key="index"
+      :message="notification.message"
+      :type="notification.type"
+    />
   </div>
 </template>
 

@@ -8,7 +8,7 @@
         placeholder="Enter confirmation token"
       />
       <div class="popup-actions">
-        <button :class="cancel" @click="cancel">Cancel</button>
+        <button :class="cancelClass" @click="cancel">Cancel</button>
         <button :class="confirmClass" @click="confirm">Confirm</button>
       </div>
     </div>
@@ -21,7 +21,7 @@ export default {
     return {
       token: '',
       isVisible: false,
-      cancel: 'cancel',
+      cancelClass: 'cancelClass',
       confirmClass: 'confirmClass',
     };
   },
@@ -85,7 +85,7 @@ input {
   margin: 5px;
 }
 
-.cancel {
+.cancelClass {
   background-color: #d11a2a;
 }
 
